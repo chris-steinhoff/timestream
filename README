@@ -1,0 +1,39 @@
+
+Backup files and directories.
+
+
+USAGE
+--------------------------------------------------------------------------------
+
+timestream.sh <options>
+  -h
+  --help
+    Usage documentation
+
+  -s
+  --source
+    Directory to be backed up. Must be a directory, must exist.
+
+  -d
+  --destination
+    Directory to store the backed up files. Must be a directory, must exist.
+
+
+ROADMAP
+--------------------------------------------------------------------------------
+
+0.1:
+  Shell script to mirror a directory.
+
+0.2:
+  Shell script to keep multiple snapshots.
+
+0.3:
+  C program to keep multiple snapshots.
+
+1.0:
+  Restore backups.
+
+2.0:
+  GUI.
+
