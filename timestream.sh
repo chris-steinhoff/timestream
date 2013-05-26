@@ -142,6 +142,7 @@ backup_dir () {
 				then
 					if ! [ -d "$BPEEK" ]
 					then
+						echo "rm -f '$BPEEK'"
 						rm -f "$BPEEK"
 						make_dir
 					fi
@@ -156,7 +157,19 @@ backup_dir () {
 			then
 				if [ -r "$f" ]
 				then
-					copy "$f"
+					if [ -d "$BPEEK/$f" ]
+					then
+						echo "rm -rf '$BPEEK/$f'"
+						rm -rf "$BPEEK/$f"
+						copy "$f"
+					else
+						if [ "$f" -nt "$BPEEK/$f" ]
+						then
+							copy "$f"
+						else
+							echo "[III] File hasn't changed $SPEEK/$f" 1>&2
+						fi
+					fi
 				else 
 					echo "[EEE] Cannot read $SPEEK/$f" 1>&2
 				fi
