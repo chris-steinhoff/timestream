@@ -97,8 +97,8 @@ BPEEK="$BAK"
 
 # Push onto the stack
 push () {
-	SS[$SI+1]=$(echo "$SPEEK/$1")
-	BS[$SI+1]=$(echo "$BPEEK/$1")
+	SS[$SI+1]="$SPEEK/$1"
+	BS[$SI+1]="$BPEEK/$1"
 	((SI++))
 	peek
 }
@@ -138,7 +138,16 @@ backup_dir () {
 				echo "[III] Not a regular directory $SPEEK/$f" 1>&2
 			else
 				push "$f"
-				make_dir
+				if [ -e "$BPEEK" ]
+				then
+					if ! [ -d "$BPEEK" ]
+					then
+						rm -f "$BPEEK"
+						make_dir
+					fi
+				else
+					make_dir
+				fi
 				backup_dir
 				pop
 			fi
