@@ -34,7 +34,7 @@ do
 		shift
 		if [ "$1" == "" ]
 		then
-			echo "Please supply a source directory"
+			echo "Please supply a source directory" 1>&2
 			exit 1
 		else
 			SRC=$(readlink -f "$1")
@@ -44,7 +44,7 @@ do
 		shift
 		if [ "$1" == "" ]
 		then
-			echo "Please supply a destination directory"
+			echo "Please supply a destination directory" 1>&2
 			exit 2
 		else
 			BAK=$(readlink -f "$1")
@@ -57,14 +57,14 @@ done
 # Verify the user configured a src dir
 if [ "$SRC" == "" ]
 then
-	echo "Please supply a source directory"
+	echo "Please supply a source directory" 1>&2
 	exit 1
 fi
 
 # Verify the user configured a bak dir
 if [ "$BAK" == "" ]
 then
-	echo "Please supply a destination directory"
+	echo "Please supply a destination directory" 1>&2
 	exit 2
 fi
 
@@ -74,22 +74,20 @@ echo "SRC = $SRC"
 # Verify the src dir exists
 if ! [ -d "$SRC" ]
 then
-	echo "The source directory supplied is not a directory"
+	echo "The source directory supplied is not a directory" 1>&2
 	exit 3
 fi
 
 # Verify the bak dir exists
 if ! [ -d "$BAK" ]
 then
-	echo "The destination directory supplied is not a directory"
+	echo "The destination directory supplied is not a directory" 1>&2
 	exit 4
 fi
 
 # Stack to hold the current src dir
-#declare -a SS
 SS=("$SRC")
 # Stack to hold the current dest dir
-#declare -a BS
 BS=("$BAK")
 # Stack index
 SI=0
@@ -135,16 +133,26 @@ backup_dir () {
 	do
 		if [ -d "$f" ]
 		then
-			push "$f"
-			make_dir
-			backup_dir
-			pop
-		else
-			if [ -r "$f" ]
+			if [ -h "$f" ]
 			then
-				copy "$f"
+				echo "[III] Not a regular directory $SPEEK/$f" 1>&2
 			else
-				echo "[EEE] Cannot read $f"
+				push "$f"
+				make_dir
+				backup_dir
+				pop
+			fi
+		else
+			if [ -f "$f" ] && [ ! -h "$f" ]
+			then
+				if [ -r "$f" ]
+				then
+					copy "$f"
+				else 
+					echo "[EEE] Cannot read $SPEEK/$f" 1>&2
+				fi
+			else
+				echo "[III] Not a regular file $SPEEK/$f" 1>&2
 			fi
 		fi
 	done
