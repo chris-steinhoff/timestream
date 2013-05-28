@@ -85,6 +85,16 @@ then
 	exit 4
 fi
 
+LOCK_FILE="$BAK/lock"
+if [ -e "$LOCK_FILE" ]
+then
+	echo "It looks like a backup is already running." 1>&2
+	echo "If you are sure this is wrong, delete '$LOCK_FILE'" 1>&2
+	exit 5
+else
+	touch "$LOCK_FILE"
+fi
+
 # Stack to hold the current src dir
 SS=("$SRC")
 # Stack to hold the current dest dir
@@ -182,4 +192,6 @@ backup_dir () {
 
 peek
 backup_dir
+
+rm -f "$LOCK_FILE"
 
