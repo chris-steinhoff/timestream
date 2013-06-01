@@ -97,9 +97,10 @@ fi
 
 unlock () {
 	rm -f "$LOCK_FILE"
+	exit 0
 }
 
-trap "unlock" TERM
+trap "unlock" SIGHUP SIGINT TERM
 
 # Stack to hold the current src dir
 SS=("$SRC")
