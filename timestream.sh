@@ -95,6 +95,12 @@ else
 	touch "$LOCK_FILE"
 fi
 
+unlock () {
+	rm -f "$LOCK_FILE"
+}
+
+trap "unlock" TERM
+
 # Stack to hold the current src dir
 SS=("$SRC")
 # Stack to hold the current dest dir
@@ -203,5 +209,5 @@ backup_dir () {
 peek
 backup_dir
 
-rm -f "$LOCK_FILE"
+unlock
 
