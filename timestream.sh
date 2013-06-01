@@ -138,9 +138,19 @@ copy () {
 	cp -p "$SPEEK/$1" "$BPEEK/$1"
 }
 
+# Backup all files in the current directory
+# Recurse into subdirectories
 backup_dir () {
-	for f in $(ls --group-directories-first)
+	# Foreach file and directory
+	for f in $(ls -a --group-directories-first)
 	do
+		# Ignore current and parent directories
+		if [ "$f" == "." ] || [ "$f" == ".." ]
+		then
+			continue
+		fi
+
+		# If it's a directory, recurse into it, unless it's a symlink
 		if [ -d "$f" ]
 		then
 			if [ -h "$f" ]
