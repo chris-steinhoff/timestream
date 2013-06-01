@@ -68,8 +68,8 @@ then
 	exit 2
 fi
 
-echo "BAK = $BAK"
-echo "SRC = $SRC"
+#echo "BAK = $BAK"
+#echo "SRC = $SRC"
 
 # Verify the src dir exists
 if ! [ -d "$SRC" ]
@@ -88,7 +88,7 @@ fi
 # Format the lock name as: '.lock.' PID '.' random number
 LOCK_FILE="$BAK/.lock.$$.$RANDOM"
 # Check if a process has already locked this directory
-LOCKS="$(ls $BAK/.lock.[0-9]*.[0-9]*)"
+LOCKS="$(ls $BAK/.lock.[0-9]*.[0-9]* 2> /dev/null)"
 if [ -n "$LOCKS" ]
 then
 	echo "It looks like a backup is already running." 1>&2
@@ -127,7 +127,7 @@ push () {
 
 # Pop off the stack
 pop () {
-	echo "touch -r '$SPEEK' '$BPEEK'"
+	#echo "touch -r '$SPEEK' '$BPEEK'"
 	touch -r "$SPEEK" "$BPEEK"
 	((SI--))
 	peek
@@ -142,13 +142,13 @@ peek () {
 
 # Create the destination directory
 make_dir () {
-	echo "mkdir '$BPEEK'"
+	#echo "mkdir '$BPEEK'"
 	mkdir "$BPEEK"
 }
 
 # Copy the source file to the destination and keep permissions
 copy () {
-	echo "cp '$SPEEK/$1' '$BPEEK/$1'"
+	#echo "cp '$SPEEK/$1' '$BPEEK/$1'"
 	cp -p "$SPEEK/$1" "$BPEEK/$1"
 }
 
@@ -169,7 +169,8 @@ backup_dir () {
 		then
 			if [ -h "$f" ]
 			then
-				echo "[III] Not a regular directory $SPEEK/$f" 1>&2
+				#echo "[III] Not a regular directory $SPEEK/$f" 1>&2
+				:
 			else
 				push "$f"
 				# If the destination exists
@@ -179,7 +180,7 @@ backup_dir () {
 					if ! [ -d "$BPEEK" ]
 					then
 						# Delete the file and make the directory
-						echo "rm -f '$BPEEK'"
+						#echo "rm -f '$BPEEK'"
 						rm -f "$BPEEK"
 						make_dir
 					fi
@@ -202,7 +203,7 @@ backup_dir () {
 					if [ -d "$BPEEK/$f" ]
 					then
 						# Delete the directory and copy the file
-						echo "rm -rf '$BPEEK/$f'"
+						#echo "rm -rf '$BPEEK/$f'"
 						rm -rf "$BPEEK/$f"
 						copy "$f"
 					else
@@ -211,14 +212,16 @@ backup_dir () {
 						then
 							copy "$f"
 						else
-							echo "[III] File hasn't changed $SPEEK/$f" 1>&2
+							#echo "[III] File hasn't changed $SPEEK/$f" 1>&2
+							:
 						fi
 					fi
 				else 
 					echo "[EEE] Cannot read $SPEEK/$f" 1>&2
 				fi
 			else
-				echo "[III] Not a regular file $SPEEK/$f" 1>&2
+				#echo "[III] Not a regular file $SPEEK/$f" 1>&2
+				:
 			fi
 		fi
 	done
