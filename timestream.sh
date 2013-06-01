@@ -85,11 +85,14 @@ then
 	exit 4
 fi
 
-LOCK_FILE="$BAK/lock"
-if [ -e "$LOCK_FILE" ]
+# Format the lock name as: '.lock.' PID '.' random number
+LOCK_FILE="$BAK/.lock.$$.$RANDOM"
+# Check if a process has already locked this directory
+LOCKS="$(ls $BAK/.lock.[0-9]*.[0-9]*)"
+if [ -n "$LOCKS" ]
 then
 	echo "It looks like a backup is already running." 1>&2
-	echo "If you are sure this is wrong, delete '$LOCK_FILE'" 1>&2
+	echo "If you are sure this is wrong, delete '$LOCKS'" 1>&2
 	exit 5
 else
 	touch "$LOCK_FILE"
