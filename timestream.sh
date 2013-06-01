@@ -98,11 +98,13 @@ else
 	touch "$LOCK_FILE"
 fi
 
+# Delete the lock file
 unlock () {
 	rm -f "$LOCK_FILE"
 	exit 0
 }
 
+# Catch signals so we can delete the lock file
 trap "unlock" SIGHUP SIGINT TERM
 
 # Stack to hold the current src dir
@@ -138,11 +140,13 @@ peek () {
 	cd "$SPEEK"
 }
 
+# Create the destination directory
 make_dir () {
 	echo "mkdir '$BPEEK'"
 	mkdir "$BPEEK"
 }
 
+# Copy the source file to the destination and keep permissions
 copy () {
 	echo "cp '$SPEEK/$1' '$BPEEK/$1'"
 	cp -p "$SPEEK/$1" "$BPEEK/$1"
@@ -168,31 +172,41 @@ backup_dir () {
 				echo "[III] Not a regular directory $SPEEK/$f" 1>&2
 			else
 				push "$f"
+				# If the destination exists
 				if [ -e "$BPEEK" ]
 				then
+					# and it's not a directory
 					if ! [ -d "$BPEEK" ]
 					then
+						# Delete the file and make the directory
 						echo "rm -f '$BPEEK'"
 						rm -f "$BPEEK"
 						make_dir
 					fi
 				else
+					# The destination doesn't exist so create it
 					make_dir
 				fi
+				# Backup this directory and go back up a level
 				backup_dir
 				pop
 			fi
 		else
+			# If the file's a regular file
 			if [ -f "$f" ] && [ ! -h "$f" ]
 			then
+				# and it can be read
 				if [ -r "$f" ]
 				then
+					# If the destination is a directory
 					if [ -d "$BPEEK/$f" ]
 					then
+						# Delete the directory and copy the file
 						echo "rm -rf '$BPEEK/$f'"
 						rm -rf "$BPEEK/$f"
 						copy "$f"
 					else
+						# Copy the file if it's newer than the previous backup
 						if [ "$f" -nt "$BPEEK/$f" ]
 						then
 							copy "$f"
