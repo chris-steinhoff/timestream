@@ -107,19 +107,42 @@ unlock () {
 # Catch signals so we can delete the lock file
 trap "unlock" SIGHUP SIGINT TERM
 
+# Find the previous backups directory
+PREV="$(ls -d $BAK/[0-9][0-9][0-9][0-9] 2>/dev/null | tail -1)"
+if [ "$PREV" == "" ]
+then
+	PREV="$BAK/${RANDOM}${RANDOM}${RANDOM}"
+else
+	for i in 1 2 3 4 5
+	do
+		PREV="$(ls -d $PREV/[0-9][0-9] | tail -1)"
+	done
+fi
+unset Y
+#echo "$PREV"
+
+# Determin the current dest dir
+CURR="$BAK/$(date +%Y/%m/%d/%H/%M/%S)"
+mkdir -p "$CURR"
+#echo "$CURR"
+
 # Stack to hold the current src dir
 SS=("$SRC")
+# Stack to hold the previous dest dir
+PS=("$PREV")
 # Stack to hold the current dest dir
-BS=("$BAK")
+BS=("$CURR")
 # Stack index
 SI=0
 # Value at head of the stack
 SPEEK="$SRC"
-BPEEK="$BAK"
+PPEEK="$PREV"
+BPEEK="$CURR"
 
 # Push onto the stack
 push () {
 	SS[$SI+1]="$SPEEK/$1"
+	PS[$SI+1]="$PPEEK/$1"
 	BS[$SI+1]="$BPEEK/$1"
 	((SI++))
 	peek
@@ -136,6 +159,7 @@ pop () {
 # Peek the stack
 peek () {
 	SPEEK="${SS[$SI]}"
+	PPEEK="${PS[$SI]}"
 	BPEEK="${BS[$SI]}"
 	cd "$SPEEK"
 }
@@ -150,6 +174,12 @@ make_dir () {
 copy () {
 	#echo "cp '$SPEEK/$1' '$BPEEK/$1'"
 	cp -p "$SPEEK/$1" "$BPEEK/$1"
+}
+
+# Link the backup file to the previous file
+link () {
+	#echo "ln '$PPEEK/$1' '$BPEEK/$1'"
+	ln "$PPEEK/$1" "$BPEEK/$1"
 }
 
 # Backup all files in the current directory
@@ -207,13 +237,17 @@ backup_dir () {
 						rm -rf "$BPEEK/$f"
 						copy "$f"
 					else
-						# Copy the file if it's newer than the previous backup
-						if [ "$f" -nt "$BPEEK/$f" ]
+						# If the file is newer than the previous backup, copy
+						# it, else create a hard-link
+						if [ "$f" -nt "$PPEEK/$f" ]
 						then
 							copy "$f"
 						else
 							#echo "[III] File hasn't changed $SPEEK/$f" 1>&2
-							:
+							if [ -e "$PPEEK/$f" ]
+							then
+								link "$f"
+							fi
 						fi
 					fi
 				else 
